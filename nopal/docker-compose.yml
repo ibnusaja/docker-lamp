@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  web:
+#    image: php:8.3-apache-bookworm
+    build: .
+    container_name: apache-php
+    ports:
+      - "80:80"
+    volumes:
+      - ./www:/var/www/html
+    depends_on:
+      - db
+    networks:
+      - lamp-net
+#    command: docker-php-ext-enable mysqli && apache2-foreground
+
+  db:
+    image: mysql:8
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: mydatabase
+      MYSQL_USER: user
+      MYSQL_PASSWORD: userpassword
+    volumes:
+      - dbdata:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - lamp-net
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    environment:
+      PMA_HOST: db
+      PMA_USER: user
+      PMA_PASSWORD: userpassword
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    networks:
+      - lamp-net
+
+networks:
+  lamp-net:
+    driver: bridge
+
+volumes:
+  dbdata:
